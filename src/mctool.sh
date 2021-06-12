@@ -68,6 +68,11 @@ setup_dirs()
     done
 }
 
+
+
+cd ${CHIA_INSTALL_DIR}
+source ./activate
+
 while [ 1 ];
 do
     show_menu
@@ -75,20 +80,6 @@ do
     read OPT
 
     case $OPT in
-    a) 
-        echo "Activate chia environment"
-        cd ${CHIA_INSTALL_DIR}
-        source ./activate
-        press_enter
-        ;;
-
-    d)
-        echo "Deactivate chia environment"
-        cd ${CHIA_INSTALL_DIR}
-        deactivate
-        press_enter
-        ;;
-
     k)
         echo "Set plot parameters"
         press_enter
@@ -144,7 +135,8 @@ do
         ;;
 
     q)
-        echo "Option 0 selected"
+        echo "Exit from menu"
+        deactivate
         exit
         ;;
 
