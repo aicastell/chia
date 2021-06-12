@@ -5,12 +5,6 @@ TMP_DRIVES="sda"
 PLOT_DRIVES="sdb sdc"
 CHIA_INSTALL_DIR=/home/${USER}/Documentos/chia-blockchain
 
-PLOT_K_SIZE=32
-PLOT_MB_B=4000
-PLOT_CPUS_R=4
-PLOT_BUCKETS_U=128
-PLOT_CHALLENGE_N=16
-
 press_enter()
 {
     echo "Press enter to continue"
@@ -48,7 +42,11 @@ setup_dirs()
         if [ -b /dev/${d} ]; then
             echo mkdir -p /media/tmp-${c}
             echo chmod 777 /media/tmp-${c}
-            echo mount /dev/${d} /media/tmp-${c}
+            if [ -b /dev/${d}1 ]; then
+                echo mount /dev/${d}1 /media/tmp-${c}
+            else
+                echo create a valid partition in /dev/${d}
+            fi
             c=$((c+1))
         fi
     done
@@ -59,7 +57,11 @@ setup_dirs()
         if [ -b /dev/${d} ]; then
             echo mkdir -p /media/plot-${c}
             echo chmod 777 /media/plot-${c}
-            echo mount /dev/${d} /media/plot-${c} 
+            if [ -b /dev/${d}1 ]; then
+                echo mount /dev/${d}1 /media/plot-${c} 
+            else
+                echo create a valid partition in /dev/${d}
+            fi
             echo chia plots add -d /media/plot-${c}
             c=$((c+1))
         fi
