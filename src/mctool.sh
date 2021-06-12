@@ -16,8 +16,6 @@ show_menu()
     echo "*************************************************"
     echo "CRIPTOBADIA SL"
     echo "Chia controller menu"
-    echo "  a. Activate chia environment"
-    echo "  d. Deactivate chia environment"
     echo "  k. Set plot parameters"
     echo "  v. Show chia version"
     echo "  1. Start farming"
@@ -70,8 +68,14 @@ setup_dirs()
 
 
 
+if [ ! -d ${CHIA_INSTALL_DIR} ]; then
+    echo "Install dir not found"
+    exit
+fi
+
 cd ${CHIA_INSTALL_DIR}
 source ./activate
+chia init
 
 while [ 1 ];
 do
@@ -141,7 +145,7 @@ do
         ;;
 
     *)
-        echo Unknown option
+        echo "Unknown option"
         ;;
     esac
 
