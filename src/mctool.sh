@@ -23,11 +23,8 @@ PLOT_R=4
 PLOT_U=128
 PLOT_N=16
 
-#PLOT_TMP_DRIVE=/media/tmp-01
-#PLOT_END_DRIVE=/media/plot-01
-
-PLOT_TMP_DRIVE=/media/plot-tmp
-PLOT_END_DRIVE=/media/chia
+PLOT_TMP_DRIVE=/media/tmp-01
+PLOT_END_DRIVE=/media/plot-01
 
 press_enter()
 {
@@ -42,7 +39,6 @@ show_menu()
     echo "Chia controller menu"
     echo "  d. See devices and partitions available"
     echo "  p. Setup partition (sdX)"
-    echo "  t. Setup tmp device"
     echo "  k. Set plotter parameters"
     echo "  c. Print current plotter parameters"
     echo "  r. Run new plotter process (background)"
@@ -100,43 +96,6 @@ setup_partition()
         echo "Formatting partition ${PARTITION}"
         mkfs.ext4 ${PARTITION}
     fi
-}
-
-setup_dirs()
-{
-    mkdir -p ${CHIA_LOGS}
-    chmod 777 ${CHIA_LOGS}
-
-    c=1
-    for d in ${TMP_DRIVES}
-    do
-        if [ -b /dev/${d} ]; then
-            echo mkdir -p /media/tmp-${c}
-            echo chmod 777 /media/tmp-${c}
-            if [ -b /dev/${d}1 ]; then
-                echo mount /dev/${d}1 /media/tmp-${c}
-            else
-                echo create a valid partition in /dev/${d}
-            fi
-            c=$((c+1))
-        fi
-    done
-
-    c=1
-    for d in ${PLOT_DRIVES}
-    do
-        if [ -b /dev/${d} ]; then
-            echo mkdir -p /media/plot-${c}
-            echo chmod 777 /media/plot-${c}
-            if [ -b /dev/${d}1 ]; then
-                echo mount /dev/${d}1 /media/plot-${c} 
-            else
-                echo create a valid partition in /dev/${d}
-            fi
-            echo chia plots add -d /media/plot-${c}
-            c=$((c+1))
-        fi
-    done
 }
 
 check_apt_depends()
@@ -256,7 +215,9 @@ run_plotter_process()
         export PLOT_TMP_DRIVE
         export PLOT_END_DRIVE
         export CHIA_LOGS
-        screen -d -m -S chia${i} run_plotter.sh
+        chmod 777 ${PLOT_TMP_DRIVE}
+        chmod 777 ${PLOT_END_DRIVE}
+        screen -d -m -S chia${PLOT_ID} run_plotter.sh
         PLOT_ID=$(($PLOT_ID + 1))
     fi
 }
@@ -270,6 +231,9 @@ fi
 
 check_apt_depends
 chia_activate
+
+mkdir -p ${CHIA_LOGS}
+chmod 777 ${CHIA_LOGS}
 
 while [ 1 ];
 do
@@ -311,12 +275,6 @@ do
     r)
         echo "Run plotter process"
         run_plotter_process
-        press_enter
-        ;;
-
-    t)
-        echo "Setup tmp device"
-        setup_tmp_device
         press_enter
         ;;
 
