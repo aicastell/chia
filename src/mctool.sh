@@ -11,7 +11,7 @@ CHIA_INSTALL_DIR=/home/${USER}/Descargas/chia-blockchain
 CHIA_LOGS=/home/${USER}/chialogs
 
 # apt-get dependencies
-APT_DEPENDS="git vim make gcc parted"
+APT_DEPENDS="git vim make gcc parted screen"
 
 # Plotter process number
 PLOT_ID=0
