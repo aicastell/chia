@@ -86,6 +86,7 @@ setup_partition()
 
     if [ $ANS != "Y" ]; then
         echo "Action aborted!"
+        return
     else
         echo "Creating partition ${PARTITION} of size ${D_SZ}.00TB"
         parted --script ${DEVICE} \
