@@ -97,6 +97,21 @@ setup_partition()
         echo "Formatting partition ${PARTITION}"
         mkfs.ext4 ${PARTITION}
     fi
+
+    # Check /etc/fstab entry
+    sudo blkid | grep $PARTITION
+    if [ $? -eq 0 ]; then
+        echo "Partition ${PARTITION} found in /etc/fstab, skipping"
+        return
+    fi
+
+    # Add /etc/fstab entry
+    echo -ne "Set mount point (/media/tmp-0X or /media/plot-0X): "
+    read MOUNT_POINT
+    UUID=$(blkid ${PARTITION} | cut -f 3 -d " " | sed "s/\"//g" | cut -f 2 -d "=")
+    sudo bash  -c 'echo "UUID=${UUID} ${MOUNT_POINT} ext4 errors=remount-ro 0 1" >> /etc/fstab'
+    cat /etc/fstab
+    sudo mount -a
 }
 
 check_apt_depends()
