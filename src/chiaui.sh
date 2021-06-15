@@ -85,8 +85,8 @@ setup_partition()
     echo "This action will destroy contents of ${DEVICE}"
     echo "Please make this with *CAUTION*"
     echo "This step is *IRREVERSIBLE*"
-    echo "Press y in uppercase"
-    echo -ne "if you are sure completely sure what are you doing: "
+    echo "If you are completely sure what are you doing..."
+    echo -ne "press y in uppercase: "
     read ANS
 
     if [ $ANS != "Y" ]; then
@@ -94,7 +94,7 @@ setup_partition()
         return
     else
         echo "Creating partition ${PARTITION} of size ${D_SZ}.00TB"
-        parted --script ${DEVICE} \
+        sudo parted --script ${DEVICE} \
             mklabel gpt \
             unit TB \
             mkpart primary 0.00TB ${D_SZ}.00TB \
