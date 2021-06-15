@@ -67,7 +67,12 @@ setup_partition()
         return
     fi
 
-    PARTITION=${DEVICE}1
+    if [ ${D:0:4} == "nvme" ]; then
+        PARTITION=${DEVICE}p1
+    else
+        PARTITION=${DEVICE}1
+    fi
+
     if [ -b ${PARTITION} ]; then
         echo "Partition ${PARTITION} exists, aborting!"
         return
@@ -96,7 +101,7 @@ setup_partition()
             print
         sleep 1
         echo "Formatting partition ${PARTITION}"
-        mkfs.ext4 ${PARTITION}
+        sudo mkfs.ext4 ${PARTITION}
     fi
 
     # Check /etc/fstab entry
