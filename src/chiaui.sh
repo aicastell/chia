@@ -12,7 +12,7 @@ CHIA_INSTALL_DIR=/home/${USER}/Descargas/chia-blockchain
 CHIA_LOGS=/home/${USER}/chialogs
 
 # apt-get dependencies
-APT_DEPENDS="git vim make gcc parted screen"
+APT_DEPENDS="git vim make gcc parted screen smartmontools lm-sensors"
 
 # Plotter process number
 PLOT_ID=0
@@ -43,6 +43,7 @@ show_menu()
     echo "  k. Set plotter parameters"
     echo "  c. Print current plotter parameters"
     echo "  r. Run new plotter process (background)"
+    echo "  t. Check CPU temperature"
     echo "  v. Show chia version"
     echo "  1. Start farming"
     echo "  2. Stop farming"
@@ -51,6 +52,7 @@ show_menu()
     echo "  6. Wallet show"
     echo "  7. Verify plots"
     echo "  8. Verify farmer"
+    echo "  9. Verify disk"
     echo "  q. Exit"
     echo "*************************************************"
 }
@@ -67,41 +69,39 @@ setup_partition()
         return
     fi
 
+    EXTRA_PARTITION=""
     if [ ${D:0:4} == "nvme" ]; then
-        PARTITION=${DEVICE}p1
-    else
-        PARTITION=${DEVICE}1
+        EXTRA_PARTITION="p"
     fi
 
-    if [ -b ${PARTITION} ]; then
-        echo "Partition ${PARTITION} exists, aborting!"
-        return
-    fi
+    PARTITION=${DEVICE}${EXTRA_PARTITION}1
+    if [ ! -b ${PARTITION} ]
+    then
+        echo -ne "Enter partition size (TB): "
+        read D_SZ
 
-    echo -ne "Enter size (TB): "
-    read D_SZ
+        echo "Lets create a ${D_SZ}.00TB partition ${PARTITION}"
+        echo "This action will destroy contents of ${DEVICE}"
+        echo "Please make this with *CAUTION*"
+        echo "This step is *IRREVERSIBLE*"
+        echo "If you are completely sure what are you doing..."
+        echo -ne "press y in uppercase: "
+        read ANS
 
-    echo "Lets create a ${D_SZ}.00TB partition ${PARTITION}"
-    echo "This action will destroy contents of ${DEVICE}"
-    echo "Please make this with *CAUTION*"
-    echo "This step is *IRREVERSIBLE*"
-    echo "If you are completely sure what are you doing..."
-    echo -ne "press y in uppercase: "
-    read ANS
-
-    if [ $ANS != "Y" ]; then
-        echo "Action aborted!"
-        return
-    else
-        echo "Creating partition ${PARTITION} of size ${D_SZ}.00TB"
-        sudo parted --script ${DEVICE} \
-            mklabel gpt \
-            unit TB \
-            mkpart primary 0.00TB ${D_SZ}.00TB \
-            print
-        sleep 1
-        echo "Formatting partition ${PARTITION}"
-        sudo mkfs.ext4 ${PARTITION}
+        if [ $ANS != "Y" ]; then
+            echo "Action aborted!"
+            return
+        else
+            echo "Creating partition ${PARTITION} of size ${D_SZ}.00TB"
+            sudo parted --script ${DEVICE} \
+                mklabel gpt \
+                unit TB \
+                mkpart primary 0.00TB ${D_SZ}.00TB \
+                print
+            sleep 1
+            echo "Formatting partition ${PARTITION}"
+            sudo mkfs.ext4 ${PARTITION}
+        fi
     fi
 
     # Check /etc/fstab entry
@@ -112,7 +112,7 @@ setup_partition()
     fi
 
     # Add /etc/fstab entry
-    echo -ne "Set mount point (/media/tmp-0X or /media/plot-0X): "
+    echo -ne "Set mount point for this partition (i.e. /media/tmp-0X or /media/plot-0X): "
     read MOUNT_POINT
     UUID=$(blkid ${PARTITION} | cut -f 3 -d " " | sed "s/\"//g" | cut -f 2 -d "=")
     sudo bash  -c 'echo "UUID=${UUID} ${MOUNT_POINT} ext4 errors=remount-ro 0 1" >> /etc/fstab'
@@ -244,6 +244,13 @@ run_plotter_process()
     fi
 }
 
+verify_disk()
+{
+    echo -ne "Enter disk name to verify (i.e. sda): "
+    read DEVICE
+    smartctl -i $DEVICE
+}
+
 ##### MAIN
 
 if [ ! -d ${CHIA_INSTALL_DIR} ]; then
@@ -300,6 +307,12 @@ do
         press_enter
         ;;
 
+    t)
+        echo "Check CPU temperature"
+        sensors
+        press_enter
+        ;;
+
     1)
         echo "Start farming"
         chia start farmer -r
@@ -340,6 +353,12 @@ do
     8)
         echo "Verify farmer"
         chia farm summary
+        press_enter
+        ;;
+
+    9)
+        echo "Verify disk"
+        verify_disk
         press_enter
         ;;
 
