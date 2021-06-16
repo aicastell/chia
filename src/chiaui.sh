@@ -248,7 +248,7 @@ verify_disk()
 {
     echo -ne "Enter disk name to verify (i.e. sda): "
     read DEVICE
-    smartctl -i $DEVICE
+    sudo smartctl -i /dev/$DEVICE
 }
 
 ##### MAIN
