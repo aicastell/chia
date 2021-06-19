@@ -12,7 +12,7 @@ CHIA_INSTALL_DIR=/home/${USER}/Descargas/chia-blockchain
 CHIA_LOGS=/home/${USER}/chialogs
 
 # apt-get dependencies
-APT_DEPENDS="git vim make gcc parted screen smartmontools lm-sensors"
+APT_DEPENDS="git vim make gcc parted screen smartmontools lm-sensors htop"
 
 # Plotter process number
 PLOT_ID=0
@@ -47,7 +47,6 @@ show_menu()
     echo "  v. Show chia version"
     echo "  1. Start farming"
     echo "  2. Stop farming"
-    echo "  3. Setup directories"
     echo "  4. Generate keys"
     echo "  6. Wallet show"
     echo "  7. Verify plots"
@@ -105,8 +104,8 @@ setup_partition()
     fi
 
     # Check /etc/fstab entry
-    sudo blkid | grep $PARTITION
-    if [ $? -eq 0 ]; then
+    RC=$(blkid | grep $PARTITION | wc -l)
+    if [ $RC -gt 0 ]; then
         echo "Partition ${PARTITION} found in /etc/fstab, skipping"
         return
     fi
@@ -322,12 +321,6 @@ do
     2)
         echo "Stop farming"
         chia stop -d all
-        press_enter
-        ;;
-
-    3)
-        echo "Setup directories"
-        setup_dirs
         press_enter
         ;;
 
