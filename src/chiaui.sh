@@ -4,7 +4,7 @@
 #
 # Chia User interface
 # Tool to make your life easier working with Chia coin
-# vers: 0.0.2
+# vers: 0.1.0
 #
 
 USER=aicastell
