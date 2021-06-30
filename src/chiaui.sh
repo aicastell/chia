@@ -47,6 +47,7 @@ show_menu()
     echo "  v. Show chia version"
     echo "  1. Start farming"
     echo "  2. Stop farming"
+    echo "  3. Upgrade software to latest"
     echo "  4. Generate keys"
     echo "  6. Wallet show"
     echo "  7. Verify plots"
@@ -104,7 +105,7 @@ setup_partition()
     fi
 
     # Check /etc/fstab entry
-    RC=$(blkid | grep $PARTITION | wc -l)
+    RC=$(sudo blkid | grep $PARTITION | wc -l)
     if [ $RC -gt 0 ]; then
         echo "Partition ${PARTITION} found in /etc/fstab, skipping"
         return
@@ -113,9 +114,10 @@ setup_partition()
     # Add /etc/fstab entry
     echo -ne "Set mount point for this partition (i.e. /media/tmp-0X or /media/plot-0X): "
     read MOUNT_POINT
-    UUID=$(blkid ${PARTITION} | cut -f 3 -d " " | sed "s/\"//g" | cut -f 2 -d "=")
-    sudo bash  -c 'echo "UUID=${UUID} ${MOUNT_POINT} ext4 errors=remount-ro 0 1" >> /etc/fstab'
-    cat /etc/fstab
+    UUID=$(sudo blkid ${PARTITION} | cut -f 3 -d " " | sed "s/\"//g" | cut -f 2 -d "=")
+    cp /etc/fstab /tmp
+    echo "UUID=${UUID} ${MOUNT_POINT} ext4 errors=remount-ro 0 1" >> /tmp/fstab
+    sudo mv /tmp/fstab /etc/fstab
     sudo mount -a
 }
 
@@ -124,9 +126,9 @@ check_apt_depends()
     echo "Checking package dependencies..."
     for DEPEND in ${APT_DEPENDS}
     do
-        dpkg -s ${DEPEND} &> /dev/null
+        dpkg -s ${DEPEND} &> /dev/null 2>&1
         if [ $? -eq 0 ]; then
-            echo "Package depend ${DEPEND} is installed"
+            echo "Package depend ${DEPEND} is installed" &> /dev/null 2>&1
         else
             sudo apt install ${DEPEND}
         fi
@@ -250,6 +252,18 @@ verify_disk()
     sudo smartctl -i /dev/$DEVICE
 }
 
+upgrade_software_to_latest()
+{
+    chia stop -d all
+    chia_deactivate
+    git fetch
+    git checkout latest
+    git status
+    sudo sh install.sh
+    . ./activate
+    chia_activate
+}
+
 ##### MAIN
 
 if [ ! -d ${CHIA_INSTALL_DIR} ]; then
@@ -321,6 +335,12 @@ do
     2)
         echo "Stop farming"
         chia stop -d all
+        press_enter
+        ;;
+
+    3)
+        echo "Upgrade software to latest"
+        upgrade_software_to_latest
         press_enter
         ;;
 
