@@ -7,8 +7,8 @@
 # vers: 0.1.0
 #
 
-USER=aicastell
-CHIA_INSTALL_DIR=/home/${USER}/Descargas/chia-blockchain
+USER=$(whoami)
+CHIA_INSTALL_DIR=/home/${USER}/Documentos/chia-blockchain
 CHIA_LOGS=/home/${USER}/chialogs
 
 # apt-get dependencies
@@ -49,6 +49,7 @@ show_menu()
     echo "  2. Stop farming"
     echo "  3. Upgrade software to latest"
     echo "  4. Generate keys"
+    echo "  5. Install software"
     echo "  6. Wallet show"
     echo "  7. Verify plots"
     echo "  8. Verify farmer"
@@ -264,10 +265,20 @@ upgrade_software_to_latest()
     chia_activate
 }
 
+install_software()
+{
+    CREATE_DIR=$(echo ${CHIA_INSTALL_DIR} | sed "s/chia-blockchain//g")
+    mkdir -p ${CREATE_DIR}
+    cd ${CREATE_DIR}
+    git clone https://github.com/Chia-Network/chia-blockchain.git -b latest --recurse-submodules
+    cd ${CHIA_INSTALL_DIR}
+    sh install.sh
+}
+
 ##### MAIN
 
 if [ ! -d ${CHIA_INSTALL_DIR} ]; then
-    echo "Install dir not found"
+    echo "Install dir ${CHIA_INSTALL_DIR} not found"
     exit
 fi
 
@@ -350,6 +361,12 @@ do
         chia keys generate
         press_enter
         ;;
+
+    5) 
+        echo "Install software"
+	install_software
+	press_enter
+	;;
 
     6)
         echo "Wallet show"
