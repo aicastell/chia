@@ -109,26 +109,27 @@ create_partition()
 
 mount_partition()
 {
-    echo -ne "Enter partition (/dev/sdX1): "
-    read PARTITION
+    echo -ne "Enter partition (sdX1): "
+    read PART
 
+    PARTITION=/dev/${PART}
     if [ ! -b ${PARTITION} ]; then
         echo "Partition ${PARTITION} not found, aborting!"
 	return
     fi
 
-    # Check /etc/fstab entry
-    RC=$(sudo blkid | grep $PARTITION | wc -l)
-    if [ $RC -gt 0 ]; then
-        echo "Partition ${PARTITION} found in /etc/fstab, skipping"
-        return
+    UUID=$(sudo blkid ${PARTITION} | cut -f 2 -d " " | sed "s/\"//g" | cut -f 2 -d "=")
+    if [ $(cat /etc/fstab | grep ${UUID}) ]; then
+	    echo "Partition $PARTITION already found"
+	    return
     fi
 
     # Add /etc/fstab entry
     echo -ne "Set mount point for this partition (i.e. /media/tmp-0X or /media/plot-0X): "
     read MOUNT_POINT
-    UUID=$(sudo blkid ${PARTITION} | cut -f 3 -d " " | sed "s/\"//g" | cut -f 2 -d "=")
-    cp /etc/fstab /tmp
+    chmod 777 ${MOUNT_POINT}
+
+    cp /etc/fstab /tmp/fstab
     echo "UUID=${UUID} ${MOUNT_POINT} ext4 errors=remount-ro 0 1" >> /tmp/fstab
     sudo mv /tmp/fstab /etc/fstab
     sudo mount -a
@@ -355,10 +356,10 @@ do
         ;;
 
     l)
-        echo "Add 24-mnemonic word key"
-        add_24_word_mnemonic_key
-        press_enter
-        ;;
+	echo "Add 24-mnemonic word key"
+	add_24_word_mnemonic_key
+	press_enter
+	;;
 
     t)
         echo "Check CPU temperature"
@@ -393,9 +394,9 @@ do
 
     5) 
         echo "Install software"
-        install_software
-        press_enter
-        ;;
+	install_software
+	press_enter
+	;;
 
     6)
         echo "Wallet show"
