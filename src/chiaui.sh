@@ -38,10 +38,12 @@ show_menu()
     echo "*************************************************"
     echo "CRIPTOBADIA SLU"
     echo "Chia controller menu"
-    echo "  d. See devices and partitions available"
-    echo "  p. Setup partition (sdX)"
-    echo "  k. Set plotter parameters"
     echo "  c. Print current plotter parameters"
+    echo "  d. See devices and partitions available"
+    echo "  k. Set plotter parameters"
+    echo "  l. Load 24-mnemonic word key"
+    echo "  p. Create partition (sdX)"
+    echo "  m. Mount partition (/dev/sdX1)"
     echo "  r. Run new plotter process (background)"
     echo "  t. Check CPU temperature"
     echo "  v. Show chia version"
@@ -58,9 +60,8 @@ show_menu()
     echo "*************************************************"
 }
 
-setup_partition()
+create_partition()
 {
-    echo "Setup partition"
     echo -ne "Enter device name (sdX): "
     read D
 
@@ -103,6 +104,17 @@ setup_partition()
             echo "Formatting partition ${PARTITION}"
             sudo mkfs.ext4 ${PARTITION}
         fi
+    fi
+}
+
+mount_partition()
+{
+    echo -ne "Enter partition (/dev/sdX1): "
+    read PARTITION
+
+    if [ ! -b ${PARTITION} ]; then
+        echo "Partition ${PARTITION} not found, aborting!"
+	return
     fi
 
     # Check /etc/fstab entry
@@ -275,6 +287,11 @@ install_software()
     sh install.sh
 }
 
+add_24_word_mnemonic_key()
+{
+    chia keys add
+}
+
 ##### MAIN
 
 if [ ! -d ${CHIA_INSTALL_DIR} ]; then
@@ -320,14 +337,26 @@ do
         ;;
 
     p) 
-        echo "Setup partition"
-        setup_partition
+        echo "Create partition"
+        create_partition
         press_enter
         ;;
+
+    m)
+        echo "Mount partition"
+        mount_partition
+        press_enter
+        ;;	
 
     r)
         echo "Run plotter process"
         run_plotter_process
+        press_enter
+        ;;
+
+    l)
+        echo "Add 24-mnemonic word key"
+        add_24_word_mnemonic_key
         press_enter
         ;;
 
@@ -364,9 +393,9 @@ do
 
     5) 
         echo "Install software"
-	install_software
-	press_enter
-	;;
+        install_software
+        press_enter
+        ;;
 
     6)
         echo "Wallet show"
