@@ -127,7 +127,8 @@ mount_partition()
     # Add /etc/fstab entry
     echo -ne "Set mount point for this partition (i.e. /media/tmp-0X or /media/plot-0X): "
     read MOUNT_POINT
-    chmod 777 ${MOUNT_POINT}
+    sudo mkdir -p ${MOUNT_POINT}
+    sudo chmod 777 ${MOUNT_POINT}
 
     cp /etc/fstab /tmp/fstab
     echo "UUID=${UUID} ${MOUNT_POINT} ext4 errors=remount-ro 0 1" >> /tmp/fstab
