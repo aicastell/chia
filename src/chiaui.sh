@@ -118,19 +118,22 @@ mount_partition()
 	return
     fi
 
+    # Get the UUID
     UUID=$(sudo blkid ${PARTITION} | cut -f 2 -d " " | sed "s/\"//g" | cut -f 2 -d "=")
-    if [ $(cat /etc/fstab | grep ${UUID}) ]; then
-	    echo "Partition $PARTITION already found"
+    UUID_FOUND=$(cat /etc/fstab | grep ${UUID} | wc -l)
+    if [ $UUID_FOUND -gt 0 ]; then
+	    echo "Partition $PARTITION is currently mounted, aborting!"
 	    return
     fi
 
-    # Add /etc/fstab entry
+    # Setup the mount point
     echo -ne "Set mount point for this partition (i.e. /media/tmp-0X or /media/plot-0X): "
     read MOUNT_POINT
     sudo mkdir -p ${MOUNT_POINT}
     sudo chmod 777 ${MOUNT_POINT}
 
-    cp /etc/fstab /tmp/fstab
+    # Add /etc/fstab entry
+    cat /etc/fstab | grep -v $MOUNT_POINT > /tmp/fstab
     echo "UUID=${UUID} ${MOUNT_POINT} ext4 errors=remount-ro 0 1" >> /tmp/fstab
     sudo mv /tmp/fstab /etc/fstab
     sudo mount -a
@@ -317,6 +320,7 @@ do
     d) 
         echo "See devices and partitions available"
         cat /proc/partitions
+        df -h
         press_enter
         ;;
 
