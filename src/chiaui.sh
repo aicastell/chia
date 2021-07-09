@@ -39,6 +39,7 @@ show_menu()
     echo "*************************************************"
     echo "CRIPTOBADIA SLU"
     echo "Chia controller menu"
+    echo "  a. Add plotter directory for farming"
     echo "  c. Print current plotter parameters"
     echo "  d. See devices and partitions available"
     echo "  i. Install systemd services"
@@ -311,6 +312,13 @@ install_systemd_services()
     echo "systemd services installed"
 }
 
+add_farming_dir()
+{
+    echo "Enter new directory for farming (/media/plot-0X): "
+    read FARMING_DIR
+    chia plots add -d ${FARMING_DIR}
+}
+
 ##### MAIN
 
 if [ ! -d ${CHIA_INSTALL_DIR} ]; then
@@ -331,6 +339,12 @@ do
     read OPT
 
     case $OPT in
+    a)
+        echo "Add farming directory"
+        add_farming_dir
+        press_enter
+        ;;
+
     d) 
         echo "See devices and partitions available"
         cat /proc/partitions
