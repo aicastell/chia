@@ -4,10 +4,11 @@
 #
 # Chia User interface
 # Tool to make your life easier working with Chia coin
-# vers: 0.1.0
+# vers: 0.1.1
 #
 
 USER=$(whoami)
+CHIA_DIR=/home/${USER}/Documentos/chia/src/
 CHIA_INSTALL_DIR=/home/${USER}/Documentos/chia-blockchain
 CHIA_LOGS=/home/${USER}/chialogs
 
@@ -40,10 +41,11 @@ show_menu()
     echo "Chia controller menu"
     echo "  c. Print current plotter parameters"
     echo "  d. See devices and partitions available"
+    echo "  i. Install systemd services"
     echo "  k. Set plotter parameters"
     echo "  l. Load 24-mnemonic word key"
-    echo "  p. Create partition (sdX)"
     echo "  m. Mount partition (/dev/sdX1)"
+    echo "  p. Create partition (sdX)"
     echo "  r. Run new plotter process (background)"
     echo "  t. Check CPU temperature"
     echo "  v. Show chia version"
@@ -297,6 +299,18 @@ add_24_word_mnemonic_key()
     chia keys add
 }
 
+install_systemd_services()
+{
+    sudo mkdir -p /usr/local/chia/
+    cat ${CHIA_DIR}/chia-farming-start.sh | sed "s|TEMPLATE|${CHIA_INSTALL_DIR}|g" > /tmp/chia-farming-start.sh
+    sudo mv /tmp/chia-farming-start.sh /usr/local/chia/
+    cat ${CHIA_DIR}/chia-farming-stop.sh | sed "s|TEMPLATE|${CHIA_INSTALL_DIR}|g" > /tmp/chia-farming-stop.sh
+    sudo mv /tmp/chia-farming-stop.sh /usr/local/chia/
+    sudo chmod +x /usr/local/chia/chia-farming-start.sh
+    sudo chmod +x /usr/local/chia/chia-farming-stop.sh
+    echo "systemd services installed"
+}
+
 ##### MAIN
 
 if [ ! -d ${CHIA_INSTALL_DIR} ]; then
@@ -336,6 +350,12 @@ do
         press_enter
         ;;
 
+    i)
+        echo "Install systemd services"
+        install_systemd_services
+        press_enter
+        ;;
+
     v)
         echo "Show chia version"
         chia version
@@ -361,10 +381,10 @@ do
         ;;
 
     l)
-	echo "Add 24-mnemonic word key"
-	add_24_word_mnemonic_key
-	press_enter
-	;;
+        echo "Add 24-mnemonic word key"
+        add_24_word_mnemonic_key
+        press_enter
+        ;;
 
     t)
         echo "Check CPU temperature"
