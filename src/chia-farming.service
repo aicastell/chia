@@ -1,0 +1,14 @@
+[Unit]
+Description=CHIA Service
+After=syslog.target network.target
+
+[Service]
+User=USER
+Group=USER
+WorkingDirectory=WORKDIR
+Type=forking
+ExecStart=/usr/local/chia/chia-farming-start.sh
+ExecStop=/usr/local/chia/chia-farming-stop.sh
+
+[Install]
+WantedBy=multi-user.target

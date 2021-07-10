@@ -10,6 +10,7 @@
 USER=$(whoami)
 CHIA_DIR=/home/${USER}/Documentos/chia/src/
 CHIA_INSTALL_DIR=/home/${USER}/Documentos/chia-blockchain
+WORK_DIR=$(echo ${CHIA_INSTALL_DIR} | sed "s/chia-blockchain//g")
 CHIA_LOGS=/home/${USER}/chialogs
 
 # apt-get dependencies
@@ -287,9 +288,8 @@ upgrade_software_to_latest()
 
 install_software()
 {
-    CREATE_DIR=$(echo ${CHIA_INSTALL_DIR} | sed "s/chia-blockchain//g")
-    mkdir -p ${CREATE_DIR}
-    cd ${CREATE_DIR}
+    mkdir -p ${WORK_DIR}
+    cd ${WORK_DIR}
     git clone https://github.com/Chia-Network/chia-blockchain.git -b latest --recurse-submodules
     cd ${CHIA_INSTALL_DIR}
     sh install.sh
@@ -303,13 +303,28 @@ add_24_word_mnemonic_key()
 install_systemd_services()
 {
     sudo mkdir -p /usr/local/chia/
-    cat ${CHIA_DIR}/chia-farming-start.sh | sed "s|TEMPLATE|${CHIA_INSTALL_DIR}|g" > /tmp/chia-farming-start.sh
+
+    echo "Install start farming script"
+    cp ${CHIA_DIR}/chia-farming-start.sh /tmp/
+    sed -i "s|TEMPLATE|${CHIA_INSTALL_DIR}|g" /tmp/chia-farming-start.sh
     sudo mv /tmp/chia-farming-start.sh /usr/local/chia/
-    cat ${CHIA_DIR}/chia-farming-stop.sh | sed "s|TEMPLATE|${CHIA_INSTALL_DIR}|g" > /tmp/chia-farming-stop.sh
-    sudo mv /tmp/chia-farming-stop.sh /usr/local/chia/
     sudo chmod +x /usr/local/chia/chia-farming-start.sh
+
+    echo "Install stop farming script"
+    cp ${CHIA_DIR}/chia-farming-stop.sh /tmp/
+    sed -i "s|TEMPLATE|${CHIA_INSTALL_DIR}|g" /tmp/chia-farming-stop.sh
+    sudo mv /tmp/chia-farming-stop.sh /usr/local/chia/
     sudo chmod +x /usr/local/chia/chia-farming-stop.sh
-    echo "systemd services installed"
+
+    echo "Installing systemd service"
+    cp ${CHIA_DIR}/chia-farming.service /tmp/
+    sed -i "s|WORKDIR|${WORK_DIR}|g" /tmp/chia-farming.service
+    sed -i "s|USER|${USER}|g" /tmp/chia-farming.service
+    sudo mv /tmp/chia-farming.service /etc/systemd/system/
+    #sudo systemctl enable chia-farming.service
+    #sudo systemctl start chia-farming.service
+
+    echo "Systemd services properly installed"
 }
 
 add_farming_dir()
@@ -433,9 +448,9 @@ do
 
     5) 
         echo "Install software"
-	install_software
-	press_enter
-	;;
+        install_software
+        press_enter
+        ;;
 
     6)
         echo "Wallet show"
