@@ -4,7 +4,7 @@ This is my chia user interface controller
 
 # Contact
 
-Please send comments and improvent proposals to contacto@criptobadia.es
+Please send any comments or improvent proposal to: contacto@criptobadia.es
 
 # Greetings
 
