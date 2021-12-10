@@ -14,7 +14,7 @@ WORK_DIR=$(echo ${CHIA_INSTALL_DIR} | sed "s/chia-blockchain//g")
 CHIA_LOGS=/home/${USER}/chialogs
 
 # apt-get dependencies
-APT_DEPENDS="git vim make gcc parted screen smartmontools lm-sensors htop"
+APT_DEPENDS="git vim make gcc parted screen smartmontools lm-sensors htop exfat-utils"
 
 # Plotter process number
 PLOT_ID=0
@@ -106,7 +106,7 @@ create_partition()
                 print
             sleep 1
             echo "Formatting partition ${PARTITION}"
-            sudo mkfs.ext4 ${PARTITION}
+            sudo mkfs.exfat ${PARTITION}
         fi
     fi
 }
